@@ -1,0 +1,258 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    /* shadcn base */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-sans);
+    --font-mono: var(--font-geist-mono);
+    --font-serif: var(--font-serif);
+    --font-headline: var(--font-headline);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+
+    /* Stitch 디자인 시스템 — Clinical Sanctuary 팔레트 */
+    --color-cs-primary: #006974;
+    --color-cs-primary-dim: #005c66;
+    --color-cs-primary-container: #93eefc;
+    --color-cs-on-primary: #ebfcff;
+    --color-cs-on-primary-container: #005962;
+
+    --color-cs-secondary: #26686a;
+    --color-cs-secondary-container: #aeeef0;
+    --color-cs-on-secondary-container: #125b5d;
+
+    --color-cs-tertiary: #526262;
+    --color-cs-tertiary-container: #dff1f0;
+    --color-cs-on-tertiary-container: #4b5c5b;
+
+    --color-cs-surface: #f7fafa;
+    --color-cs-surface-container: #e9efef;
+    --color-cs-surface-container-low: #eff5f5;
+    --color-cs-surface-container-high: #e2e9ea;
+    --color-cs-surface-container-highest: #dbe4e5;
+    --color-cs-surface-bright: #f7fafa;
+
+    --color-cs-on-surface: #2b3435;
+    --color-cs-on-surface-strong: #1a2728;
+    --color-cs-on-surface-variant: #586161;
+    --color-cs-outline: #737c7d;
+    --color-cs-outline-variant: #abb4b4;
+    --color-cs-primary-tint: #f0fafa;
+}
+
+:root {
+    --background: #f7fafa;
+    --foreground: #2b3435;
+    --card: #ffffff;
+    --card-foreground: #2b3435;
+    --popover: #ffffff;
+    --popover-foreground: #2b3435;
+    --primary: #006974;
+    --primary-foreground: #ebfcff;
+    --secondary: #eff5f5;
+    --secondary-foreground: #2b3435;
+    --muted: #e9efef;
+    --muted-foreground: #586161;
+    --accent: #e9efef;
+    --accent-foreground: #2b3435;
+    --destructive: #a83836;
+    --border: #abb4b4;
+    --input: #e9efef;
+    --ring: #006974;
+    --radius: 0.75rem;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    html {
+        @apply font-sans;
+    }
+}
+
+/* iOS Safari: input 포커스 시 화면 확대 방지 (font-size < 16px 이면 자동 확대됨) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+    font-size: 16px;
+}
+
+/* 스크롤바 숨기기 */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 섹션 진입 애니메이션 — 아래에서 슬라이드 업 + 페이드 인 */
+@keyframes section-enter {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.section-enter {
+    animation: section-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+    .section-enter {
+        animation: none;
+    }
+}
+
+/* 메시지 fade-in 애니메이션 */
+@keyframes message-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.message-enter {
+    animation: message-in 0.3s ease-out forwards;
+}
+
+/* 스트리밍 점 애니메이션 */
+@keyframes bounce-dot {
+    0%,
+    80%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    40% {
+        transform: translateY(-5px);
+        opacity: 1;
+    }
+}
+.streaming-dot:nth-child(1) {
+    animation: bounce-dot 1.2s ease-in-out infinite 0s;
+}
+.streaming-dot:nth-child(2) {
+    animation: bounce-dot 1.2s ease-in-out infinite 0.2s;
+}
+.streaming-dot:nth-child(3) {
+    animation: bounce-dot 1.2s ease-in-out infinite 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .message-enter {
+        animation: none;
+    }
+    .streaming-dot {
+        animation: none;
+        opacity: 0.6;
+    }
+}
+
+/* Range slider 커스텀 스타일 */
+input[type="range"].range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+input[type="range"].range-slider::-webkit-slider-track {
+    height: 0.5rem;
+    background: #e2e9ea;
+    border-radius: 9999px;
+}
+input[type="range"].range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: #006974;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 105, 116, 0.25);
+    margin-top: -0.5rem;
+    cursor: pointer;
+}
+input[type="range"].range-slider::-moz-range-track {
+    height: 0.5rem;
+    background: #e2e9ea;
+    border-radius: 9999px;
+}
+input[type="range"].range-slider::-moz-range-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    background: #006974;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 105, 116, 0.25);
+    cursor: pointer;
+}
+
+/* react-markdown 렌더링 스타일 */
+.prose-health {
+    line-height: 1.75;
+    color: #2b3435;
+    font-size: 0.875rem;
+}
+.prose-health p {
+    margin-bottom: 0.5rem;
+}
+.prose-health p:last-child {
+    margin-bottom: 0;
+}
+.prose-health strong {
+    font-weight: 600;
+    color: #1a2728;
+}
+.prose-health ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.prose-health ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.prose-health li {
+    margin-bottom: 0.25rem;
+}
+.prose-health blockquote {
+    border-left: 3px solid #abb4b4;
+    padding-left: 0.875rem;
+    color: #586161;
+    font-style: italic;
+    margin: 0.5rem 0;
+}
