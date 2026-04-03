@@ -9,10 +9,14 @@ import { createSupabaseServer } from "@/lib/supabase-server";
  */
 export async function resolveUserId(request?: Request): Promise<string | null> {
     // Supabase Auth 확인
-    const supabase = await createSupabaseServer();
-    if (supabase) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.id) return user.id;
+    try {
+        const supabase = await createSupabaseServer();
+        if (supabase) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.id) return user.id;
+        }
+    } catch {
+        // Supabase 연결 실패 시 X-Device-Id 폴백으로 진행
     }
 
     // 폴백: X-Device-Id 헤더

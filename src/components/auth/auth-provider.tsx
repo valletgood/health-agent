@@ -37,9 +37,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // 초기 세션 확인
         void (async () => {
-            const { data: { user } } = await client.auth.getUser();
-            setUser(user);
-            setIsLoading(false);
+            try {
+                const { data: { user } } = await client.auth.getUser();
+                setUser(user);
+            } catch {
+                // Supabase 연결 실패 시 비로그인 상태로 진행
+            } finally {
+                setIsLoading(false);
+            }
         })();
 
         // 인증 상태 변화 구독

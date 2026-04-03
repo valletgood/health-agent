@@ -62,7 +62,7 @@ export function IntakeBasicInfoStep({ form, setForm }: IntakeBasicInfoStepProps)
                         value={form.birthDate}
                         max={getMaxDate()}
                         onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))}
-                        className="w-full h-11 px-4 rounded-xl border border-border bg-white text-sm text-cs-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        className="w-full max-w-full h-11 px-4 rounded-xl border border-border bg-white text-sm text-cs-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition appearance-none overflow-hidden box-border"
                     />
                 </div>
             </div>
