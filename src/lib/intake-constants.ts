@@ -24,7 +24,7 @@ export function createInitialForm(symptomList: SymptomItem[] = [...SYMPTOM_LIST]
         gender: "",
         symptoms: Object.fromEntries(symptomList.map((s) => [s.key, false])) as IntakeFormData["symptoms"],
         otherSymptoms: "",
-        painLevel: 0,
+        painLevel: 5,
         visitPurpose: "",
     };
 }

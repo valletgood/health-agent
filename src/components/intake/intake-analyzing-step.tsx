@@ -79,7 +79,7 @@ export const IntakeAnalyzingStep = ({ questions, onComplete }: IntakeAnalyzingSt
             </div>
 
             <div className="space-y-1">
-                <h2 className="font-headline text-2xl font-extrabold text-cs-on-surface-strong">
+                <h2 className="text-2xl font-extrabold text-cs-on-surface-strong">
                     {!isLoadingQuestions && phase === "asking" ? ASKING_TITLE : LOADING_TITLE}
                 </h2>
                 <p className="text-sm text-muted-foreground">

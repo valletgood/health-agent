@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 나음 (Health Agent)
 
-## Getting Started
+디지털 건강 문진표 기반 AI 건강 상담 서비스
 
-First, run the development server:
+사용자가 구조화된 문진표(기본 정보, 증상, 통증 강도, 방문 목적)를 작성하면, Neo4j 지식 그래프에서 관련 의학 정보를 조회하고 Gemini AI가 추가 질문 생성 및 최종 분석 결과를 제공합니다. 결과 화면에서 AI 채팅 상담, 주변 병원/약국 검색까지 이어집니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 주요 기능
+
+- **다단계 문진표** — 기본 정보, 증상 체크리스트, 기타 증상, 통증 강도를 단계별로 입력
+- **AI 증상 분석** — Neo4j 의학 지식 그래프 + Gemini AI를 결합한 증상 분석 및 가이드 제공
+- **추가 질문 생성** — AI가 맥락에 맞는 추가 질문을 동적으로 생성하여 분석 정확도 향상
+- **AI 채팅 상담** — 분석 결과를 바탕으로 Gemini 기반 실시간 채팅 상담
+- **주변 병원/약국 검색** — HIRA 공공 API + 네이버 지도 연동, 마커 클릭 시 네이버 지도 검색으로 이동
+- **문진 이력 저장/조회** — Supabase DB에 분석 결과 자동 저장, `/history`에서 과거 기록 열람
+- **증상 일지 트래커** — 매일 컨디션 점수·증상·메모 기록, Recharts 30일 추이 차트
+- **Google 소셜 로그인** — Supabase Auth 기반, 미로그인 시 익명 기기 ID 폴백
+
+## 기술 스택
+
+| 영역 | 도구 |
+|---|---|
+| 프레임워크 | Next.js 15 (App Router) |
+| 언어 | TypeScript (strict mode) |
+| 스타일링 | TailwindCSS v4 + shadcn/ui |
+| 폰트 | Pretendard Variable |
+| 런타임 | React 19 |
+| 패키지 매니저 | pnpm |
+| AI 에이전트 | Google Gemini API (`gemini-2.5-flash`) |
+| 지식 그래프 | Neo4j |
+| 데이터베이스 | Supabase (PostgreSQL) + Drizzle ORM |
+| 인증 | Supabase Auth (Google OAuth) |
+| 차트 | Recharts |
+| 지도 | 네이버 지도 JavaScript API v3 |
+| 병원/약국 API | 건강보험심사평가원(HIRA) 공공 API |
+
+## 데이터 흐름
+
+```
+문진표 작성 → Neo4j 증상 검색 → Gemini 추가 질문 생성 → 사용자 답변 → Gemini 최종 분석 → 결과 화면
+                                                                                          ├── AI 채팅 상담
+                                                                                          ├── 주변 병원 검색 (네이버 지도)
+                                                                                          └── 주변 약국 검색 (네이버 지도)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 시작하기
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 환경 변수 설정
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.local` 파일을 생성하고 아래 변수를 설정합니다.
 
-## Learn More
+```env
+GEMINI_API_KEY=                    # Google Gemini API 키
+NEO4J_URI=                         # Neo4j 연결 URI
+NEO4J_USER=                        # Neo4j 사용자명
+NEO4J_PASSWORD=                    # Neo4j 비밀번호
+DATABASE_URL=                      # Supabase PostgreSQL 연결 문자열
+NEXT_PUBLIC_SUPABASE_URL=          # Supabase 프로젝트 URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=     # Supabase anon key
+HIRA_API_KEY=                      # 건강보험심사평가원 API 키
+NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=   # 네이버 클라우드 플랫폼 Client ID
+```
 
-To learn more about Next.js, take a look at the following resources:
+> 비밀번호에 특수문자(`#`, `!` 등)가 포함된 경우 반드시 따옴표로 감싸세요.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 실행
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm install
+pnpm dev
+```
 
-## Deploy on Vercel
+[http://localhost:3000](http://localhost:3000)에서 확인할 수 있습니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 프로젝트 구조
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    page.tsx                # 문진표 메인 페이지 (다단계 폼)
+    chat/page.tsx           # AI 채팅 상담 페이지
+    tracker/page.tsx        # 증상 일지 트래커
+    history/page.tsx        # 문진 이력 목록
+    history/[id]/page.tsx   # 문진 이력 상세
+    api/
+      chat/                 # 채팅 메시지 → Gemini 스트리밍 응답
+      disease/              # 증상 검색 → 컨텍스트 → 추가 질문 → 분석
+      hospitals/            # HIRA 병원 검색
+      pharmacies/           # HIRA 약국 검색
+      symptoms/             # Neo4j 증상 노드 목록
+      intake-records/       # 문진 이력 CRUD
+      symptom-logs/         # 증상 일지 CRUD
+      auth/callback/        # OAuth 콜백
+  components/
+    intake/                 # 문진표 단계별 컴포넌트
+    chat/                   # 채팅 UI 컴포넌트
+    auth/                   # 인증 프로바이더
+    ui/                     # shadcn/ui + 네이버 지도, 하단 내비 등
+  db/
+    schema.ts               # Drizzle ORM 스키마 (intake_records, symptom_logs)
+    index.ts                # DB 연결
+  lib/                      # Gemini, Neo4j, HIRA 클라이언트 및 유틸리티
+```
+
+## 주의사항
+
+> 이 서비스의 모든 분석 결과는 참고용이며, 의학적 진단을 대체하지 않습니다. 정확한 진단과 치료를 위해 반드시 의료 전문가와 상담하세요.

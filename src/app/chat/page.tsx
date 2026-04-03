@@ -97,7 +97,7 @@ const ChatPage = () => {
                     </svg>
                 </Button>
                 <div>
-                    <h1 className="font-headline text-base font-extrabold text-cs-on-surface-strong leading-tight">AI 상담</h1>
+                    <h1 className="text-base font-extrabold text-cs-on-surface-strong leading-tight">AI 상담</h1>
                     {context?.form.name && (
                         <p className="text-[11px] text-muted-foreground font-medium">{context.form.name}님의 증상 기반 상담</p>
                     )}

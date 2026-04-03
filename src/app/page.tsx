@@ -40,6 +40,7 @@ const IntakePage = () => {
     const [analysisSections, setAnalysisSections] = useState<AnalysisSection[]>([]);
     const [llmContext, setLlmContext] = useState<LlmDiseaseContext | null>(null);
     const [dynamicQuestions, setDynamicQuestions] = useState<FollowUpQuestion[] | null>(null);
+    const [followUpAnswers, setFollowUpAnswers] = useState<FollowUpAnswer[]>([]);
 
     // 질문 생성 완료 후 resolvedContext를 ref에 보관 — handleAnalyzingComplete에서 재사용
     const resolvedContextRef = useRef<LlmDiseaseContext | null>(null);
@@ -165,6 +166,7 @@ const IntakePage = () => {
             const sections = await runGeminiAnalysis(formRef.current, resolvedContextRef.current, answers);
             if (cancelledRef.current) return;
 
+            setFollowUpAnswers(answers);
             setAnalysisSections(sections);
             setLlmContext(resolvedContextRef.current);
             setIsVisible(true);
@@ -186,6 +188,7 @@ const IntakePage = () => {
             setAnalysisSections([]);
             setLlmContext(null);
             setDynamicQuestions(null);
+            setFollowUpAnswers([]);
             resolvedContextRef.current = null;
         });
     };
@@ -214,7 +217,7 @@ const IntakePage = () => {
             case LOADING_STEP:
                 return <IntakeAnalyzingStep questions={dynamicQuestions} onComplete={handleAnalyzingComplete} />;
             case RESULT_STEP:
-                return <IntakeSubmittedScreen form={form} analysisSections={analysisSections} specialtyCodes={deriveSpecialtyCodes(form)} llmContext={llmContext} onReset={handleReset} />;
+                return <IntakeSubmittedScreen form={form} analysisSections={analysisSections} specialtyCodes={deriveSpecialtyCodes(form)} llmContext={llmContext} followUpAnswers={followUpAnswers} onReset={handleReset} />;
             default:
                 return null;
         }
@@ -222,7 +225,7 @@ const IntakePage = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <main className="min-h-screen pt-6 px-4 pb-10">
+            <main className="min-h-screen pt-6 px-4 pb-24">
                 <div className="max-w-2xl mx-auto">
                     {/* 진행 표시줄 — 전환 애니메이션 없이 항상 표시 */}
                     <div className="mb-10">
@@ -231,8 +234,8 @@ const IntakePage = () => {
                         </div>
                         <div className="flex justify-between">
                             {STEPS.map((label, i) => (
-                                <span key={label} className={cn("text-[10px] font-bold uppercase tracking-widest transition-colors", i === step ? "text-primary" : i < step ? "text-cs-secondary" : PROGRESS_INACTIVE_TEXT_CLASS)}>
-                                    {i === step ? `${i + 1}단계: ${label}` : `${i + 1}단계`}
+                                <span key={label} className={cn("text-[10px] font-bold transition-colors", i === step ? "text-primary" : i < step ? "text-cs-secondary" : PROGRESS_INACTIVE_TEXT_CLASS)}>
+                                    {i === step ? `${i + 1}단계: ${label}${i === 0 ? ` (${subStep + 1}/${SUB_STEP_COUNT})` : ""}` : `${i + 1}단계`}
                                 </span>
                             ))}
                         </div>
@@ -241,18 +244,9 @@ const IntakePage = () => {
                     {/* 타이틀 — 애니메이션 없이 항상 표시 */}
                     {step < LOADING_STEP && (
                         <div className="mb-8 text-center">
-                            <h1 className="font-headline text-3xl font-extrabold text-cs-on-surface-strong tracking-tight mb-2">디지털 건강 문진표</h1>
+                            <h1 className="text-2xl font-extrabold text-cs-on-surface-strong tracking-tight mb-2">헷갈리는 증상, 쉽고 빠르게 확인하세요</h1>
                             <p className="text-sm text-muted-foreground mb-2">증상을 알려주시면 AI가 맞춤 건강 정보를 안내해 드립니다.</p>
                             <p className="text-[10px] font-bold text-cs-outline-variant uppercase tracking-widest">약 5분 소요</p>
-                        </div>
-                    )}
-
-                    {/* 서브스텝 진행 도트 — step 0 내 4단계 진행상황 표시 */}
-                    {step === 0 && (
-                        <div className="flex justify-center gap-1.5 mb-3">
-                            {Array.from({ length: SUB_STEP_COUNT }).map((_, i) => (
-                                <div key={i} className={cn("rounded-full transition-all duration-300", i < subStep ? "w-4 h-1.5 bg-cs-secondary" : i === subStep ? "w-6 h-1.5 bg-primary" : "w-4 h-1.5 bg-muted")} />
-                            ))}
                         </div>
                     )}
 

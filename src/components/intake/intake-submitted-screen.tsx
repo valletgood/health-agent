@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { NearbySearchSheet } from "@/components/ui/nearby-search-sheet";
 import { SPECIALTY_CODES, type Hospital, type Pharmacy } from "@/lib/hospital-types";
 import type { AnalysisSection, IntakeFormData, LlmDiseaseContext } from "@/lib/intake-types";
+import type { FollowUpAnswer } from "@/lib/intake-questions";
 import { saveChatContext } from "@/lib/chat-storage";
+import { getDeviceId } from "@/lib/device-id";
 import { cn } from "@/lib/utils";
 
 interface IntakeSubmittedScreenProps {
@@ -14,7 +17,9 @@ interface IntakeSubmittedScreenProps {
     analysisSections: AnalysisSection[];
     specialtyCodes: string[];
     llmContext: LlmDiseaseContext | null;
-    onReset: () => void;
+    followUpAnswers?: FollowUpAnswer[];
+    readOnly?: boolean;
+    onReset?: () => void;
 }
 
 type ModalType = "hospital" | "pharmacy" | null;
@@ -71,14 +76,37 @@ const getCoords = async (): Promise<{ lat: number; lng: number }> => {
     return { lat: position.coords.latitude, lng: position.coords.longitude };
 };
 
-export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, llmContext, onReset }: IntakeSubmittedScreenProps) => {
+export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, llmContext, followUpAnswers, readOnly, onReset }: IntakeSubmittedScreenProps) => {
     const router = useRouter();
+    const savedRef = useRef(false);
     const [openModal, setOpenModal] = useState<ModalType>(null);
+    const [saveToast, setSaveToast] = useState(false);
     const [loadState, setLoadState] = useState<LoadState>("idle");
     const [loadError, setLoadError] = useState<string | null>(null);
     const [isPermissionError, setIsPermissionError] = useState(false);
     const [hospitals, setHospitals] = useState<Hospital[]>([]);
     const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
+    const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+    // 분석 결과 자동 저장 (readOnly 모드가 아닐 때만)
+    useEffect(() => {
+        if (readOnly || savedRef.current) return;
+        savedRef.current = true;
+
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        // 미로그인 폴백용 디바이스 ID
+        const deviceId = getDeviceId();
+        if (deviceId) headers["X-Device-Id"] = deviceId;
+
+        void fetch("/api/intake-records", {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ formData: form, analysisSections, specialtyCodes, llmContext, followUpAnswers }),
+        }).then(() => {
+            setSaveToast(true);
+            setTimeout(() => setSaveToast(false), 3000);
+        }).catch(() => undefined);
+    }, [readOnly, form, analysisSections, specialtyCodes, llmContext, followUpAnswers]);
 
     const openSearch = async (type: ModalType) => {
         if (!type) return;
@@ -110,6 +138,7 @@ export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, 
             return;
         }
 
+        setUserCoords(coords);
         setLoadState("loading");
 
         try {
@@ -161,9 +190,16 @@ export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, 
 
     return (
         <div className="pb-8">
+            {/* 저장 완료 토스트 */}
+            {saveToast && (
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-cs-on-surface-strong text-white text-xs font-semibold rounded-full shadow-lg animate-fade-in-up whitespace-nowrap">
+                    기록이 저장되었습니다
+                </div>
+            )}
+
             {/* 타이틀 */}
             <div className="mb-10">
-                <h1 className="font-headline text-3xl font-extrabold text-cs-on-surface-strong tracking-tight mb-1.5">AI 분석 결과</h1>
+                <h1 className="text-3xl font-extrabold text-cs-on-surface-strong tracking-tight mb-1.5">AI 분석 결과</h1>
                 <p className="text-sm text-muted-foreground">{form.name ? `${form.name}님의 증상을 기반으로 분석했습니다.` : "증상을 기반으로 분석했습니다."}</p>
             </div>
 
@@ -196,7 +232,7 @@ export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, 
                 <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[11px] font-semibold text-muted-foreground">응답 신뢰도</span>
                     <span className={cn("text-[11px] font-bold", confidence.labelClass)}>
-                        {confidence.label}
+                        {confidence.label} · {confidence.score}%
                     </span>
                 </div>
                 <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
@@ -247,9 +283,15 @@ export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, 
                     </svg>
                 </Button>
 
-                <Button type="button" variant="outline" onClick={onReset} className="w-full h-auto rounded-2xl py-3 font-bold text-sm border-border bg-white text-muted-foreground hover:bg-cs-surface-container-highest">
-                    처음으로 돌아가기
-                </Button>
+                {!readOnly && onReset && (
+                    <Button type="button" variant="outline" onClick={onReset} className="w-full h-auto rounded-2xl py-3 font-bold text-sm border-border bg-white text-muted-foreground hover:bg-cs-surface-container-highest">
+                        처음으로 돌아가기
+                    </Button>
+                )}
+
+                <Link href="/history" className="block text-center text-sm font-semibold text-primary hover:underline py-2">
+                    이전 기록 보기
+                </Link>
             </div>
 
             {/* 병원 찾기 모달 */}
@@ -263,7 +305,9 @@ export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, 
                 permissionError={openModal === "hospital" ? isPermissionError : false}
                 onRetry={() => void retry()}
                 resultCount={loadState === "done" ? hospitals.length : undefined}
-                emptyText="주변 1km 내 해당 진료과 병원이 없습니다.">
+                emptyText="주변 1km 내 해당 진료과 병원이 없습니다."
+                userLocation={userCoords ?? undefined}
+                mapMarkers={hospitals.map((h) => ({ lat: h.lat, lng: h.lng, name: h.name, detail: `${formatDistance(h.distanceMeters)} · ${h.phone || ""}` }))}>
                 {hospitals.map((h) => (
                     <div key={`${h.name}-${h.address}`} className="bg-cs-surface rounded-2xl p-4 border border-border">
                         <div className="flex justify-between items-start mb-1">
@@ -294,7 +338,9 @@ export const IntakeSubmittedScreen = ({ form, analysisSections, specialtyCodes, 
                 permissionError={openModal === "pharmacy" ? isPermissionError : false}
                 onRetry={() => void retry()}
                 resultCount={loadState === "done" ? pharmacies.length : undefined}
-                emptyText="주변 1km 내 약국이 없습니다.">
+                emptyText="주변 1km 내 약국이 없습니다."
+                userLocation={userCoords ?? undefined}
+                mapMarkers={pharmacies.map((p) => ({ lat: p.lat, lng: p.lng, name: p.name, detail: `${formatDistance(p.distanceMeters)} · ${p.phone || ""}` }))}>
                 {pharmacies.map((p) => (
                     <div key={`${p.name}-${p.address}`} className="bg-cs-surface rounded-2xl p-4 border border-border">
                         <div className="flex justify-between items-start mb-1">

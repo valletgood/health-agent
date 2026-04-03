@@ -1,38 +1,28 @@
 import type { Metadata } from "next";
-import { Manrope, Noto_Sans_KR } from "next/font/google";
+import Script from "next/script";
+import { BottomNav } from "@/components/ui/bottom-nav";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-headline",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  display: "swap",
-});
-
-const notoSansKR = Noto_Sans_KR({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "건강 상담 AI",
-  description:
-    "증상을 입력하면 AI가 가능성 분석, 자가관리 방법, 진료 권고 기준을 안내합니다.",
+    title: "나음",
+    description: "증상을 입력하면 AI가 가능성 분석, 자가관리 방법, 진료 권고 기준을 안내합니다.",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html
-      lang="ko"
-      className={`${manrope.variable} ${notoSansKR.variable} antialiased`}
-    >
-      <body className="min-h-screen">{children}</body>
-    </html>
-  );
+    return (
+        <html lang="ko" className="antialiased">
+            <body className="min-h-screen">
+                <AuthProvider>
+                    {children}
+                    <BottomNav />
+                </AuthProvider>
+                {process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID && <Script src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`} strategy="afterInteractive" />}
+            </body>
+        </html>
+    );
 }

@@ -8,7 +8,7 @@ import type { IntakeFormData } from "@/lib/intake-types";
 function ReviewCard({ title, children }: { title: string; children: ReactNode }) {
     return (
         <div className="bg-secondary rounded-2xl p-6">
-            <h3 className="text-[15px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{title}</h3>
+            <h3 className="text-[15px] font-bold text-muted-foreground mb-4">{title}</h3>
             <div className="space-y-3">{children}</div>
         </div>
     );
