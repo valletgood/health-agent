@@ -4,11 +4,10 @@ import type { FollowUpAnswer, FollowUpQuestion } from "@/lib/intake-questions";
 import type { AnalysisSection, IntakeFormData, LlmDiseaseContext } from "@/lib/intake-types";
 
 function calculateKoreanAge(birthDate: string): number | null {
-    if (!birthDate) return null;
-    const [yearStr, monthStr, dayStr] = birthDate.split("-");
-    const year = Number(yearStr);
-    const month = Number(monthStr);
-    const day = Number(dayStr);
+    if (!birthDate || birthDate.length !== 8) return null;
+    const year = Number(birthDate.slice(0, 4));
+    const month = Number(birthDate.slice(4, 6));
+    const day = Number(birthDate.slice(6, 8));
     if (!year || !month || !day) return null;
 
     const today = new Date();

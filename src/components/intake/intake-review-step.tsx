@@ -34,7 +34,7 @@ export function IntakeReviewStep({ form }: IntakeReviewStepProps) {
         <div className="space-y-5">
             <ReviewCard title="기본 정보">
                 <ReviewRow label="성함" value={form.name || "—"} />
-                <ReviewRow label="생년월일" value={form.birthDate || "—"} />
+                <ReviewRow label="생년월일" value={form.birthDate ? `${form.birthDate.slice(0, 4)}.${form.birthDate.slice(4, 6)}.${form.birthDate.slice(6, 8)}` : "—"} />
                 <ReviewRow label="성별" value={form.gender ? GENDER_LABELS[form.gender] : "—"} />
             </ReviewCard>
 
