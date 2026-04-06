@@ -19,7 +19,7 @@
 
 | 영역 | 도구 |
 |---|---|
-| 프레임워크 | Next.js 15 (App Router) |
+| 프레임워크 | Next.js 16 (App Router) |
 | 언어 | TypeScript (strict mode) |
 | 스타일링 | TailwindCSS v4 + shadcn/ui |
 | 폰트 | Pretendard Variable |
@@ -62,14 +62,34 @@ NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=   # 네이버 클라우드 플랫폼 Client ID
 
 > 비밀번호에 특수문자(`#`, `!` 등)가 포함된 경우 반드시 따옴표로 감싸세요.
 
-### 실행
+### 설치 및 실행
 
 ```bash
 pnpm install
+```
+
+### 데이터베이스 설정
+
+```bash
+pnpm db:generate   # Drizzle ORM 마이그레이션 파일 생성
+pnpm db:migrate    # 마이그레이션 적용
+pnpm db:push       # 스키마 직접 반영 (대안)
+```
+
+### 개발 서버
+
+```bash
 pnpm dev
 ```
 
-[http://localhost:3000](http://localhost:3000)에서 확인할 수 있습니다.
+[https://health-agent-theta.vercel.app/](https://health-agent-theta.vercel.app/)에서 확인할 수 있습니다.
+
+### 프로덕션 빌드
+
+```bash
+pnpm build
+pnpm start
+```
 
 ## 프로젝트 구조
 
@@ -99,7 +119,23 @@ src/
     schema.ts               # Drizzle ORM 스키마 (intake_records, symptom_logs)
     index.ts                # DB 연결
   lib/                      # Gemini, Neo4j, HIRA 클라이언트 및 유틸리티
+  types/                    # 추가 타입 정의
 ```
+
+## 데이터베이스 스키마
+
+| 테이블 | 설명 |
+|---|---|
+| `intake_records` | 문진 기록 (폼 데이터, AI 분석 결과, 진료과 코드, 지식 그래프 컨텍스트) |
+| `symptom_logs` | 증상 일지 (날짜별 컨디션 점수, 증상 목록, 메모) |
+
+## 디자인 시스템
+
+- **Primary Color**: Teal `#006974` — 신뢰감과 차분함을 전달하는 의료 테마
+- **Surface**: Near-white `#f7fafa` — 깔끔한 임상적 분위기
+- **Font**: Pretendard Variable — 한국어 최적화 가변 폰트
+- **Border Radius**: `rounded-2xl` (1rem) 일관 적용
+- **Mobile First**: 44px 이상 터치 타겟, 접근성 고려
 
 ## 주의사항
 
